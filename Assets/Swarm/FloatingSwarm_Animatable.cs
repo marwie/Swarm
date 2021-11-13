@@ -10,12 +10,13 @@ using Random = UnityEngine.Random;
 
 namespace Swarm
 {
-    public sealed class FloatingSwarm_Animateable : MonoBehaviour, IAnimated
+    [RefactorInfo("FloatingSwarm_Animateable")]
+    public sealed class FloatingSwarm_Animatable : MonoBehaviour, IAnimated
     {
         [Animate]
         public List<Vector3> Attractors;
 
-        private ComputeBuffer attractorsBuffer;
+        private ComputeBuffer attractorsBuffer;  
 
         private void OnDrawGizmos()
         {
@@ -287,6 +288,7 @@ namespace Swarm
             if (_tangentBuffer != null) _tangentBuffer.Release();
             if (_normalBuffer != null) _normalBuffer.Release();
             if (_materialCloned) Destroy(_material);
+            attractorsBuffer.SafeDispose();
         }
 
         void Update()
