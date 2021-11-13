@@ -8,13 +8,20 @@
 #include "UnityCG.cginc"
 #include "SimplexNoise3D.cginc"
 
-RWStructuredBuffer<float3> Attractors;
+struct Data
+{
+    float3 Position;
+    float4 Color;
+};
+
+RWStructuredBuffer<Data> Attractors;
 int AttractorsCount;
 
 RWStructuredBuffer<float4> PositionBuffer;
 RWStructuredBuffer<float4> VelocityBuffer;
 RWStructuredBuffer<float4> TangentBuffer;
 RWStructuredBuffer<float4> NormalBuffer;
+RWStructuredBuffer<float4> ColorBuffer;
 
 
 StructuredBuffer<float4> PositionBufferRO;
@@ -66,8 +73,8 @@ float3 AttractorPosition(uint id)
     float l = Random(id, 3);
     float3 d = float3(float2(cos(u), sin(u)) * sqrt(1 - z * z), z) * sqrt(l);
     int index = id.x + _Time.w * 5;
-    float3 attractor = Attractors[index % AttractorsCount];
-    return attractor + d * Attractor.w;
+    Data att = Attractors[index % AttractorsCount];
+    return att.Position + d * Attractor.w;
 }
 
 [numthreads(64, 1, 1)]
@@ -123,6 +130,10 @@ void FloatingUpdate(uint id : SV_DispatchThreadID)
 
     PositionBuffer[id].xyz = p;
     VelocityBuffer[id].xyz = v;
+    
+    int index = id.x + _Time.w * 5;
+    Data att = Attractors[index % AttractorsCount];
+    ColorBuffer[id] = lerp(ColorBuffer[id], att.Color, .01);
 }
 
 [numthreads(64, 1, 1)]

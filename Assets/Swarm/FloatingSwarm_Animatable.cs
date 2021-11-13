@@ -14,18 +14,26 @@ namespace Swarm
     public sealed class FloatingSwarm_Animatable : MonoBehaviour, IAnimated
     {
         [Animate]
-        private List<Vector3> Attractors;
+        public List<Data> Attractors;
 
-        private ComputeBuffer attractorsBuffer;   
+        public struct Data
+        {
+            public Vector3 Position;
+            public Color Color;
+        }
+
+        private ComputeBuffer attractorsBuffer, colorBuffer;
 
         private void OnDrawGizmos()
         {
             if (Attractors != null)
             {
-                foreach (var at in Attractors)
+                for (var index = 0; index < Attractors.Count; index++)
                 {
-                    Gizmos.DrawSphere(at, .1f);
-                }  
+                    var at = Attractors[index];
+                    Gizmos.color = at.Color;
+                    Gizmos.DrawSphere(at.Position, .1f);
+                }
             } 
         }
 
@@ -229,6 +237,8 @@ namespace Swarm
                 _compute.SetBuffer(kernel, "VelocityBuffer", _velocityBuffer);
                 _compute.SetBuffer(kernel, "TangentBuffer", _tangentBuffer);
                 _compute.SetBuffer(kernel, "NormalBuffer", _normalBuffer);
+                if(attractorsBuffer != null)
+                    _compute.SetBuffer(kernel, "Attractors", attractorsBuffer);
                 _compute.Dispatch(kernel, ThreadGroupCount, 1, 1);
             }
         }
@@ -265,6 +275,8 @@ namespace Swarm
             _velocityBuffer = new ComputeBuffer(InstanceCount, 16);
             _tangentBuffer = new ComputeBuffer(HistoryLength * InstanceCount, 16);
             _normalBuffer = new ComputeBuffer(HistoryLength * InstanceCount, 16);
+            attractorsBuffer = ComputeBufferUtils.SafeCreate(
+                ref attractorsBuffer, Attractors?.Count ?? 1, sizeof(float) * 7, ComputeBufferType.Structured);
 
             ResetPositions();
 
@@ -289,6 +301,7 @@ namespace Swarm
             if (_normalBuffer != null) _normalBuffer.Release();
             if (_materialCloned) Destroy(_material);
             attractorsBuffer.SafeDispose();
+            colorBuffer.SafeDispose();
         }
 
         void Update()
@@ -296,22 +309,25 @@ namespace Swarm
             var delta = Mathf.Min(Time.deltaTime, 1.0f / 30);
 
             attractorsBuffer = ComputeBufferUtils.SafeCreate(
-                ref attractorsBuffer, Attractors.Count, sizeof(float) * 3, ComputeBufferType.Structured);
+                ref attractorsBuffer, Attractors?.Count ?? 1, sizeof(float) * 7, ComputeBufferType.Structured);
+
+            colorBuffer = ComputeBufferUtils.SafeCreate(ref colorBuffer, _instanceCount, sizeof(float) * 4, ComputeBufferType.Structured);
 
             if (delta > 0) 
             {
-                // Invoke the update compute kernel.
+                // Invoke the update compute kernel. 
                 var kernel = _compute.FindKernel("FloatingUpdate");
 
-                attractorsBuffer.SetData(Attractors);
+                if(Attractors != null)
+                    attractorsBuffer.SetData(Attractors);
                 _compute.SetBuffer(kernel, "Attractors", attractorsBuffer);
-                _compute.SetInt("AttractorsCount", Attractors.Count);
+                _compute.SetInt("AttractorsCount", Attractors?.Count ?? 0);
 
                 _compute.SetInt("_InstanceCount", InstanceCount);
                 _compute.SetInt("_HistoryLength", HistoryLength);
 
                 _compute.SetFloat("RandomSeed", _randomSeed);
-                _compute.SetFloat("DeltaTime", delta);
+                _compute.SetFloat("DeltaTime", delta); 
 
                 _compute.SetVector("Attractor", AttractorVector);
                 var minForce = _attractorForce * (1 - _forceRandomness);
@@ -327,6 +343,7 @@ namespace Swarm
 
                 _compute.SetBuffer(kernel, "PositionBuffer", _positionBuffer);
                 _compute.SetBuffer(kernel, "VelocityBuffer", _velocityBuffer);
+                _compute.SetBuffer(kernel, "ColorBuffer", colorBuffer);
 
                 _compute.Dispatch(kernel, ThreadGroupCount, 1, 1);
 
@@ -354,6 +371,7 @@ namespace Swarm
             _material.SetBuffer("_PositionBuffer", _positionBuffer);
             _material.SetBuffer("_TangentBuffer", _tangentBuffer);
             _material.SetBuffer("_NormalBuffer", _normalBuffer);
+            _material.SetBuffer("_ColorBuffer", colorBuffer);
 
             _material.SetInt("_InstanceCount", InstanceCount);
             _material.SetInt("_HistoryLength", HistoryLength);

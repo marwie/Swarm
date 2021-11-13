@@ -18,7 +18,7 @@ Shader "Swarm/Tube"
 
         struct Input
         {
-            half param : COLOR;
+            half4 col;
         };
 
         half _Smoothness;
@@ -39,6 +39,7 @@ Shader "Swarm/Tube"
         StructuredBuffer<float4> _PositionBuffer;
         StructuredBuffer<float4> _TangentBuffer;
         StructuredBuffer<float4> _NormalBuffer;
+        StructuredBuffer<float4> _ColorBuffer;
 
         uint _InstanceCount;
         uint _HistoryLength;
@@ -82,7 +83,7 @@ Shader "Swarm/Tube"
             // Feedback the results.
             v.vertex = float4(p + normal * _Radius * (1 - abs(cap)), 1);
             v.normal = normal * (1 - abs(cap)) + n * cap;
-            v.color = param;
+            data.col = half4(_ColorBuffer[unity_InstanceID]);
 
             #endif
         }
@@ -95,7 +96,7 @@ Shader "Swarm/Tube"
 
         void surf (Input IN, inout SurfaceOutputStandard o)
         {
-            o.Albedo = CosineGradient(IN.param);
+            o.Albedo = IN.col;// CosineGradient(IN.param);
             o.Metallic = _Metallic;
             o.Smoothness = _Smoothness;
         }
