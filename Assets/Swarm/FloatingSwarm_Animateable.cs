@@ -1,14 +1,33 @@
 // Swarm - Special renderer that draws a swarm of swirling/crawling lines.
 // https://github.com/keijiro/Swarm
 
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Klak.Chromatics;
+using Needle.Timeline;
+using Random = UnityEngine.Random;
 
 namespace Swarm
 {
-    public sealed class FloatingSwarm : MonoBehaviour
+    public sealed class FloatingSwarm_Animateable : MonoBehaviour, IAnimated
     {
+        [Animate]
+        public List<Vector3> Attractors;
+
+        private ComputeBuffer attractorsBuffer;
+
+        private void OnDrawGizmos()
+        {
+            if (Attractors != null)
+            {
+                foreach (var at in Attractors)
+                {
+                    Gizmos.DrawSphere(at, .1f);
+                }  
+            } 
+        }
+
         #region Instancing properties
 
         [SerializeField] int _instanceCount = 1000;
@@ -274,10 +293,17 @@ namespace Swarm
         {
             var delta = Mathf.Min(Time.deltaTime, 1.0f / 30);
 
-            if (delta > 0)
+            attractorsBuffer = ComputeBufferUtils.SafeCreate(
+                ref attractorsBuffer, Attractors.Count, sizeof(float) * 3, ComputeBufferType.Structured);
+
+            if (delta > 0) 
             {
                 // Invoke the update compute kernel.
                 var kernel = _compute.FindKernel("FloatingUpdate");
+
+                attractorsBuffer.SetData(Attractors);
+                _compute.SetBuffer(kernel, "Attractors", attractorsBuffer);
+                _compute.SetInt("AttractorsCount", Attractors.Count);
 
                 _compute.SetInt("_InstanceCount", InstanceCount);
                 _compute.SetInt("_HistoryLength", HistoryLength);

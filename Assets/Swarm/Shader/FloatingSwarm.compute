@@ -8,10 +8,14 @@
 #include "UnityCG.cginc"
 #include "SimplexNoise3D.cginc"
 
+RWStructuredBuffer<float3> Attractors;
+int AttractorsCount;
+
 RWStructuredBuffer<float4> PositionBuffer;
 RWStructuredBuffer<float4> VelocityBuffer;
 RWStructuredBuffer<float4> TangentBuffer;
 RWStructuredBuffer<float4> NormalBuffer;
+
 
 StructuredBuffer<float4> PositionBufferRO;
 
@@ -61,7 +65,8 @@ float3 AttractorPosition(uint id)
     float z = Random(id, 2) * 2 - 1;
     float l = Random(id, 3);
     float3 d = float3(float2(cos(u), sin(u)) * sqrt(1 - z * z), z) * sqrt(l);
-    return Attractor.xyz + d * Attractor.w;
+    float3 attractor = Attractors[id.x % AttractorsCount];
+    return attractor + d * Attractor.w;
 }
 
 [numthreads(64, 1, 1)]
@@ -78,7 +83,7 @@ void FloatingInit(uint id : SV_DispatchThreadID)
     }
 
     VelocityBuffer[id] = 0;
-}
+} 
 
 [numthreads(64, 1, 1)]
 void FloatingUpdate(uint id : SV_DispatchThreadID)
