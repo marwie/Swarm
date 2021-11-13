@@ -8,15 +8,15 @@ using Klak.Chromatics;
 using Needle.Timeline;
 using Random = UnityEngine.Random;
 
-namespace Swarm
+namespace Swarm 
 {
     [RefactorInfo("FloatingSwarm_Animateable")]
     public sealed class FloatingSwarm_Animatable : MonoBehaviour, IAnimated
     {
         [Animate]
-        public List<Vector3> Attractors;
+        private List<Vector3> Attractors;
 
-        private ComputeBuffer attractorsBuffer;  
+        private ComputeBuffer attractorsBuffer;   
 
         private void OnDrawGizmos()
         {

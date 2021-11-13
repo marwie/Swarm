@@ -55,7 +55,7 @@ float3 NoiseField(uint id , float3 p)
     p += float3(0.9, 1.0, 1.1) * (NoiseSpread * id);
     float3 n1 = snoise(p).xyz;
     float3 n2 = snoise(p + float3(15.3, 13.1, 17.4)).xyz;
-    return cross(n1, n2);
+    return cross(n1, n2) ;
 }
 
 // Attractor position with spread parameter
@@ -65,7 +65,8 @@ float3 AttractorPosition(uint id)
     float z = Random(id, 2) * 2 - 1;
     float l = Random(id, 3);
     float3 d = float3(float2(cos(u), sin(u)) * sqrt(1 - z * z), z) * sqrt(l);
-    float3 attractor = Attractors[id.x % AttractorsCount];
+    int index = id.x + _Time.w * 5;
+    float3 attractor = Attractors[index % AttractorsCount];
     return attractor + d * Attractor.w;
 }
 
