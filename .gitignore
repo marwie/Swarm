@@ -6,3 +6,8 @@
 .DS_Store
 Thumbs.db
 Desktop.ini
+Logs
+*.csproj
+*.sln
+.idea
+obj
