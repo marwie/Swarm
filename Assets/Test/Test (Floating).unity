@@ -809,7 +809,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!64 &1005746938
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -1063,20 +1063,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9519802771eb460b8bd5013a12c24330, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _instanceCount: 1000
-  _template: {fileID: 11400000, guid: a73837610b9d85f4b839c915c22acdc2, type: 2}
-  _radius: 0.04
+  _instanceCount: 700
+  _template: {fileID: 11400000, guid: 407b7afb8fbe855408cc9bf4dd39058a, type: 2}
+  _radius: 0.1
   _trim: 1
   _attractor: {fileID: 110661692}
   _attractorPosition: {x: 0, y: 0, z: 0}
-  _attractorSpread: 0.2
-  _attractorForce: 6
-  _forceRandomness: 0
-  _drag: 5
-  _headNoiseForce: 0.5
-  _headNoiseFrequency: 0.5
-  _trailNoiseVelocity: 0.015
-  _trailNoiseFrequency: 0.1
+  _attractorSpread: 0.3
+  _attractorForce: 9
+  _forceRandomness: 0.47
+  _drag: 2
+  _headNoiseForce: 2
+  _headNoiseFrequency: 0.1
+  _trailNoiseVelocity: 0.05
+  _trailNoiseFrequency: 0.2
   _noiseSpread: 1
   _noiseMotion: 0.15
   _material: {fileID: 2100000, guid: b3e3f432bd29ac1499686dbad7ae39ef, type: 2}

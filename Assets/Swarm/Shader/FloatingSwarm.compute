@@ -72,7 +72,7 @@ float3 AttractorPosition(uint id)
     float z = Random(id, 2) * 2 - 1;
     float l = Random(id, 3);
     float3 d = float3(float2(cos(u), sin(u)) * sqrt(1 - z * z), z) * sqrt(l);
-    int index = id.x + _Time.w * 2;
+    int index = id.x;
     Data att = Attractors[index % AttractorsCount];
     return att.Position + d * Attractor.w;
 }
@@ -131,7 +131,7 @@ void FloatingUpdate(uint id : SV_DispatchThreadID)
     PositionBuffer[id].xyz = p;
     VelocityBuffer[id].xyz = v;
     
-    int index = id.x + _Time.w * 2;
+    int index = id.x;
     Data att = Attractors[index % AttractorsCount];
     ColorBuffer[id] = lerp(ColorBuffer[id], att.Color, .01);
 }
